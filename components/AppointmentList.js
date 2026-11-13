@@ -54,17 +54,24 @@ export default function AppointmentList({
   return (
     <section className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
       <div className="space-y-3 border-b border-slate-200 px-4 py-3">
-        <h2 className="text-base font-semibold text-slate-900">
-          Appointments{" "}
-          {isLoaded && (
-            <span className="font-normal text-slate-500">
-              {/* "(3 of 10)" while filtering, "(10)" when everything is shown */}
-              {appointments.length === totalCount
-                ? `(${totalCount})`
-                : `(${appointments.length} of ${totalCount})`}
-            </span>
-          )}
-        </h2>
+        {/* Heading on the left, sort label on the right (wraps below on narrow screens) */}
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <h2 className="text-base font-semibold text-slate-900">
+            Appointments{" "}
+            {isLoaded && (
+              <span className="font-normal text-slate-500">
+                {/* "(3 of 10)" while filtering, "(10)" when everything is shown */}
+                {appointments.length === totalCount
+                  ? `(${totalCount})`
+                  : `(${appointments.length} of ${totalCount})`}
+              </span>
+            )}
+          </h2>
+
+          {/* Display only: tells the receptionist how the list is ordered.
+              The actual sorting is done by sortAppointments() in page.js. */}
+          <p className="text-xs text-slate-500">Sorted by date &amp; time · soonest first</p>
+        </div>
 
         {/* "children" = whatever page.js puts between <AppointmentList> and
             </AppointmentList>: here the search box and the filter tabs */}
