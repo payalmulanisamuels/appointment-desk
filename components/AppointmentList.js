@@ -1,26 +1,44 @@
 import AppointmentCard, { ROW_COLUMNS } from "@/components/AppointmentCard";
 
-// The "Appointments" panel: a heading, the column header row (tablet/desktop only)
-// and one AppointmentCard per appointment.
-// It receives appointments that are ALREADY sorted (page.js does the sorting).
-export default function AppointmentList({ appointments, isLoaded, onStatusChange }) {
+// The "Appointments" panel: a heading, the search + tabs (passed in as children),
+// the column header row (tablet/desktop only) and one AppointmentCard per appointment.
+// It receives appointments that are ALREADY filtered and sorted (page.js does that).
+// totalCount = how many appointments exist in total, before filtering.
+export default function AppointmentList({
+  appointments,
+  totalCount,
+  isLoaded,
+  onStatusChange,
+  children,
+}) {
   return (
     <section className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
-      <div className="border-b border-slate-200 px-4 py-3">
+      <div className="space-y-3 border-b border-slate-200 px-4 py-3">
         <h2 className="text-base font-semibold text-slate-900">
           Appointments{" "}
           {isLoaded && (
-            <span className="font-normal text-slate-500">({appointments.length})</span>
+            <span className="font-normal text-slate-500">
+              {/* "(3 of 10)" while filtering, "(10)" when everything is shown */}
+              {appointments.length === totalCount
+                ? `(${totalCount})`
+                : `(${appointments.length} of ${totalCount})`}
+            </span>
           )}
         </h2>
+
+        {/* "children" = whatever page.js puts between <AppointmentList> and
+            </AppointmentList>: here the search box and the filter tabs */}
+        {children}
       </div>
 
       {/* Before localStorage is read we don't know the list yet */}
       {!isLoaded && <p className="px-4 py-6 text-sm text-slate-500">Loading appointments…</p>}
 
-      {/* Simple message for now; feature 8 replaces it with proper empty states */}
+      {/* Simple messages for now; feature 8 replaces them with proper empty states */}
       {isLoaded && appointments.length === 0 && (
-        <p className="px-4 py-6 text-sm text-slate-500">No appointments yet.</p>
+        <p className="px-4 py-6 text-sm text-slate-500">
+          {totalCount === 0 ? "No appointments yet." : "No appointments match this filter."}
+        </p>
       )}
 
       {isLoaded && appointments.length > 0 && (

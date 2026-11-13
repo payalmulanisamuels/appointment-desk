@@ -5,6 +5,9 @@ export const SERVICES = ["Consultation", "Follow-up", "Check-up", "Other"];
 export const SOURCES = ["Phone", "Walk-in", "Voice AI"];
 export const STATUSES = ["Booked", "Confirmed", "Completed", "Cancelled", "No-show"];
 
+// Filter tabs: two date tabs + one tab per status
+export const FILTERS = ["All", "Today", "Upcoming", ...STATUSES];
+
 // ----- Unique ID -----
 // Time in milliseconds + a few random characters, e.g. "m3k9x2a-7fq2ld".
 // (We don't use crypto.randomUUID() because browsers only allow it on https
@@ -71,6 +74,30 @@ export function getStatusActions(status) {
     return [{ label: "Complete", newStatus: "Completed", isMain: true }, ...cancelAndNoShow];
   }
   return [];
+}
+
+// ----- Filter + search -----
+// Returns only the appointments that match BOTH the selected tab AND the search text.
+// Step 1 keeps the ones that match the tab, step 2 keeps (from those) the ones that
+// match the search. Because step 2 starts from step 1's result, they always work together.
+export function filterAppointments(appointments, activeFilter, searchText, today) {
+  // Step 1: tab filter
+  const tabMatches = appointments.filter((appointment) => {
+    if (activeFilter === "All") return true;
+    if (activeFilter === "Today") return appointment.date === today;
+    if (activeFilter === "Upcoming") return appointment.date > today; // tomorrow onward
+    return appointment.status === activeFilter; // one of the 5 status tabs
+  });
+
+  // Step 2: search by patient name (any capitals) or phone number
+  const search = searchText.trim().toLowerCase();
+  if (search === "") return tabMatches;
+
+  return tabMatches.filter(
+    (appointment) =>
+      appointment.patientName.toLowerCase().includes(search) ||
+      appointment.phone.includes(search)
+  );
 }
 
 // ----- Sorting -----

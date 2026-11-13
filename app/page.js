@@ -4,8 +4,14 @@ import { useEffect, useState } from "react";
 import DashboardHeader from "@/components/DashboardHeader";
 import AppointmentForm from "@/components/AppointmentForm";
 import AppointmentList from "@/components/AppointmentList";
+import FilterTabs from "@/components/FilterTabs";
+import SearchBar from "@/components/SearchBar";
 import { loadAppointments, saveAppointments } from "@/utils/storage";
-import { getTodayDateString, sortAppointments } from "@/utils/appointmentHelpers";
+import {
+  filterAppointments,
+  getTodayDateString,
+  sortAppointments,
+} from "@/utils/appointmentHelpers";
 
 // The home page ("/") and THE BRAIN of the app:
 // it owns the appointments array and every function that changes it.
@@ -15,6 +21,11 @@ export default function HomePage() {
 
   // false until we have read localStorage (which only exists in the browser).
   const [isLoaded, setIsLoaded] = useState(false);
+
+  // Which filter tab is selected, and what is typed in the search box.
+  // These only change what is SHOWN, never the saved appointments.
+  const [activeFilter, setActiveFilter] = useState("All");
+  const [searchText, setSearchText] = useState("");
 
   // 1) LOAD once, after the page first appears in the browser.
   //    localStorage does not exist on the server, so this cannot happen during the
@@ -40,7 +51,10 @@ export default function HomePage() {
 
   // The list to SHOW, worked out fresh on every render. It is never stored
   // separately, so it can never get out of date with the real appointments.
-  const visibleAppointments = sortAppointments(appointments);
+  // Order: filter by tab → filter by search → sort soonest first.
+  const visibleAppointments = sortAppointments(
+    filterAppointments(appointments, activeFilter, searchText, today)
+  );
 
   // Called by AppointmentForm when a valid appointment is submitted.
   function handleAddAppointment(newAppointment) {
@@ -77,9 +91,13 @@ export default function HomePage() {
 
           <AppointmentList
             appointments={visibleAppointments}
+            totalCount={appointments.length}
             isLoaded={isLoaded}
             onStatusChange={handleStatusChange}
-          />
+          >
+            <SearchBar searchText={searchText} onSearchChange={setSearchText} />
+            <FilterTabs activeFilter={activeFilter} onFilterChange={setActiveFilter} />
+          </AppointmentList>
         </div>
       </main>
     </div>
