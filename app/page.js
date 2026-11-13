@@ -99,6 +99,8 @@ export default function HomePage() {
           <AppointmentList
             appointments={visibleAppointments}
             totalCount={appointments.length}
+            activeFilter={activeFilter}
+            searchText={searchText}
             isLoaded={isLoaded}
             onStatusChange={handleStatusChange}
           >

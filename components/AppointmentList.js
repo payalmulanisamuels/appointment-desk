@@ -1,12 +1,52 @@
 import AppointmentCard, { ROW_COLUMNS } from "@/components/AppointmentCard";
+import EmptyState from "@/components/EmptyState";
+
+// Picks the empty-state title + message that explains WHY the list is empty.
+// The checks run in order and the first one that matches wins.
+function getEmptyStateText(totalCount, activeFilter, searchText) {
+  // 1. Nothing saved at all
+  if (totalCount === 0) {
+    return {
+      title: "No appointments yet",
+      message: "Add the first appointment using the form.",
+    };
+  }
+  // 2. Something is typed in search, and nothing matches it in this tab
+  if (searchText.trim() !== "") {
+    const where = activeFilter === "All" ? "" : ` in ${activeFilter}`;
+    return {
+      title: "No matching appointments",
+      message: `Nothing matches "${searchText.trim()}"${where}. Check the spelling, or clear the search.`,
+    };
+  }
+  // 3–5. The selected tab is empty
+  if (activeFilter === "Today") {
+    return { title: "No appointments for today", message: "Today's schedule is clear." };
+  }
+  if (activeFilter === "Upcoming") {
+    return {
+      title: "No upcoming appointments",
+      message: "Nothing is booked from tomorrow onward.",
+    };
+  }
+  // A status tab. (A title like "No No-show appointments" reads badly,
+  // so the title stays general and the status name goes in the message.)
+  return {
+    title: "No appointments with this status",
+    message: `No appointment currently has the ${activeFilter} status.`,
+  };
+}
 
 // The "Appointments" panel: a heading, the search + tabs (passed in as children),
 // the column header row (tablet/desktop only) and one AppointmentCard per appointment.
 // It receives appointments that are ALREADY filtered and sorted (page.js does that).
 // totalCount = how many appointments exist in total, before filtering.
+// activeFilter + searchText are only used to choose the right empty-state message.
 export default function AppointmentList({
   appointments,
   totalCount,
+  activeFilter,
+  searchText,
   isLoaded,
   onStatusChange,
   children,
@@ -34,11 +74,9 @@ export default function AppointmentList({
       {/* Before localStorage is read we don't know the list yet */}
       {!isLoaded && <p className="px-4 py-6 text-sm text-slate-500">Loading appointments…</p>}
 
-      {/* Simple messages for now; feature 8 replaces them with proper empty states */}
+      {/* Nothing to show: explain why (the ... spreads title and message in as props) */}
       {isLoaded && appointments.length === 0 && (
-        <p className="px-4 py-6 text-sm text-slate-500">
-          {totalCount === 0 ? "No appointments yet." : "No appointments match this filter."}
-        </p>
+        <EmptyState {...getEmptyStateText(totalCount, activeFilter, searchText)} />
       )}
 
       {isLoaded && appointments.length > 0 && (
