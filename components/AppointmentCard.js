@@ -36,8 +36,14 @@ export default function AppointmentCard({ appointment, onStatusChange }) {
           )}
         </div>
         <p className="text-sm text-slate-500">{appointment.phone}</p>
+        {/* Notes: on phones the full note wraps onto as many lines as needed (phones
+            have no mouse hover). From 768px up it is limited to 2 lines to keep table
+            rows tidy, and the full note shows when you hover over it (title). */}
         {appointment.notes && (
-          <p className="mt-0.5 truncate text-xs text-slate-400" title={appointment.notes}>
+          <p
+            className="mt-0.5 text-xs break-words text-slate-500 md:line-clamp-2"
+            title={appointment.notes}
+          >
             {appointment.notes}
           </p>
         )}
