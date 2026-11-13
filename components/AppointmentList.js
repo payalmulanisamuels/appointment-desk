@@ -8,7 +8,7 @@ function getEmptyStateText(totalCount, activeFilter, searchText) {
   if (totalCount === 0) {
     return {
       title: "No appointments yet",
-      message: "Add the first appointment using the form.",
+      message: "Add the first appointment using the form, or click Load Sample Data at the top.",
     };
   }
   // 2. Something is typed in search, and nothing matches it in this tab

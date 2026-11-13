@@ -9,7 +9,9 @@ import SearchBar from "@/components/SearchBar";
 import SummaryCards from "@/components/SummaryCards";
 import { loadAppointments, saveAppointments } from "@/utils/storage";
 import {
+  createSampleAppointments,
   filterAppointments,
+  findBookingAtSlot,
   getSummaryCounts,
   getTodayDateString,
   sortAppointments,
@@ -29,6 +31,9 @@ export default function HomePage() {
   const [activeFilter, setActiveFilter] = useState("All");
   const [searchText, setSearchText] = useState("");
 
+  // Short feedback message after Load Sample Data / Clear All ("" = nothing shown).
+  const [notice, setNotice] = useState("");
+
   // 1) LOAD once, after the page first appears in the browser.
   //    localStorage does not exist on the server, so this cannot happen during the
   //    first render; an effect is the place for it. React's lint rule warns about
@@ -46,6 +51,15 @@ export default function HomePage() {
       saveAppointments(appointments);
     }
   }, [appointments, isLoaded]);
+
+  // 3) HIDE the notice message 4 seconds after it appears.
+  //    The "return" function is the cleanup: if a new notice arrives before the
+  //    4 seconds are up, React cancels the old timer first.
+  useEffect(() => {
+    if (notice === "") return;
+    const timer = setTimeout(() => setNotice(""), 4000);
+    return () => clearTimeout(timer);
+  }, [notice]);
 
   // Today's date, calculated only in the browser (after loading). On the server it
   // stays undefined, so the server HTML and the first browser HTML always match.
@@ -79,11 +93,62 @@ export default function HomePage() {
     );
   }
 
+  // "Load Sample Data" button. Adds the 8 samples, but SKIPS any sample that:
+  //  - is already in the list (same fixed id, e.g. "sample-3"), so clicking twice adds nothing
+  //  - would double-book a slot the receptionist has already used for a real patient
+  function handleLoadSampleData() {
+    const samplesToAdd = createSampleAppointments().filter(
+      (sample) =>
+        !appointments.some((appointment) => appointment.id === sample.id) &&
+        !findBookingAtSlot(appointments, sample.date, sample.time)
+    );
+
+    if (samplesToAdd.length === 0) {
+      setNotice("Sample data is already loaded.");
+      return;
+    }
+
+    setAppointments([...appointments, ...samplesToAdd]);
+    setNotice(
+      samplesToAdd.length === 8
+        ? "8 sample appointments loaded."
+        : `${samplesToAdd.length} sample appointments loaded (the rest were already there or their slot was taken).`
+    );
+  }
+
+  // "Clear All" button. window.confirm() shows the browser's OK / Cancel box
+  // and returns true only if OK was clicked.
+  function handleClearAll() {
+    const confirmed = window.confirm(
+      `Delete ALL ${appointments.length} appointments? This cannot be undone.`
+    );
+    if (!confirmed) return; // Cancel: change nothing
+
+    setAppointments([]); // the SAVE effect then writes [] to localStorage
+    setNotice("All appointments deleted.");
+  }
+
   return (
     <div className="min-h-screen">
-      <DashboardHeader />
+      <DashboardHeader
+        canLoadSample={isLoaded}
+        canClearAll={isLoaded && appointments.length > 0}
+        onLoadSampleData={handleLoadSampleData}
+        onClearAll={handleClearAll}
+      />
 
       <main className="mx-auto max-w-7xl space-y-6 px-4 py-6 sm:px-6 lg:px-8">
+        {/* Feedback after Load Sample Data / Clear All. role="status" makes
+            screen readers announce it. */}
+        {notice && (
+          <p
+            role="status"
+            className="rounded-lg border border-teal-200 bg-teal-50 px-4 py-2 text-sm font-medium text-teal-800"
+          >
+            {notice}
+          </p>
+        )}
+
         {/* Row 1: today's summary numbers */}
         <SummaryCards counts={summaryCounts} />
 

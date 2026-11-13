@@ -26,12 +26,23 @@ function twoDigits(number) {
   return String(number).padStart(2, "0");
 }
 
-// Today's date in the receptionist's LOCAL time, e.g. "2026-11-13".
+// A date as "YYYY-MM-DD" in LOCAL time.
 // (Not toISOString(): that uses UTC time, which in India gives YESTERDAY's
 // date between midnight and 5:30 AM.)
+function toDateString(date) {
+  return `${date.getFullYear()}-${twoDigits(date.getMonth() + 1)}-${twoDigits(date.getDate())}`;
+}
+
+// Today's date, e.g. "2026-11-13".
 export function getTodayDateString() {
+  return toDateString(new Date());
+}
+
+// A date a number of days from today, e.g. getDateFromToday(1) = tomorrow.
+// new Date(year, month, day + 1) handles month ends for us (31 Jan + 1 = 1 Feb).
+function getDateFromToday(daysFromToday) {
   const now = new Date();
-  return `${now.getFullYear()}-${twoDigits(now.getMonth() + 1)}-${twoDigits(now.getDate())}`;
+  return toDateString(new Date(now.getFullYear(), now.getMonth(), now.getDate() + daysFromToday));
 }
 
 // The current local time, e.g. "14:05".
@@ -128,6 +139,34 @@ export function sortAppointments(appointments) {
     }
     return a.time.localeCompare(b.time); // same day: earlier time first
   });
+}
+
+// ----- Sample data -----
+// 8 realistic demo appointments. Dates are RELATIVE to today, so the Today and
+// Upcoming tabs always have something to show, whatever day the demo runs.
+// The IDs are fixed ("sample-1" … "sample-8"): that is how we spot samples that
+// are already loaded and avoid adding them twice.
+export function createSampleAppointments() {
+  const today = getDateFromToday(0);
+
+  const samples = [
+    // Today: one of each "today" situation
+    { patientName: "Priya Sharma", phone: "9876543210", service: "Consultation", date: today, time: "09:00", status: "Completed", source: "Walk-in", notes: "First visit" },
+    { patientName: "Rahul Verma", phone: "9823456781", service: "Follow-up", date: today, time: "10:30", status: "No-show", source: "Phone", notes: "" },
+    { patientName: "Ananya Iyer", phone: "9765432109", service: "Check-up", date: today, time: "14:00", status: "Confirmed", source: "Voice AI", notes: "Fasting blood test" },
+    { patientName: "Mohammed Khan", phone: "9988776655", service: "Consultation", date: today, time: "16:30", status: "Booked", source: "Phone", notes: "" },
+    // Upcoming days
+    { patientName: "Sneha Patil", phone: "9123456780", service: "Follow-up", date: getDateFromToday(1), time: "11:00", status: "Booked", source: "Voice AI", notes: "Bring previous reports" },
+    { patientName: "Arjun Nair", phone: "9012345678", service: "Other", date: getDateFromToday(2), time: "09:30", status: "Confirmed", source: "Walk-in", notes: "Vaccination" },
+    { patientName: "Kavita Deshmukh", phone: "9898989898", service: "Check-up", date: getDateFromToday(3), time: "15:00", status: "Cancelled", source: "Phone", notes: "Patient travelling" },
+    { patientName: "Vikram Singh", phone: "9765012345", service: "Consultation", date: getDateFromToday(4), time: "12:00", status: "Booked", source: "Voice AI", notes: "" },
+  ];
+
+  return samples.map((sample, index) => ({
+    id: `sample-${index + 1}`,
+    ...sample,
+    isSample: true,
+  }));
 }
 
 // ----- Double-booking check -----
