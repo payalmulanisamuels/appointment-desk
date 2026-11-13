@@ -218,9 +218,12 @@ function FormField({ label, htmlFor, required = false, error, children }) {
 }
 
 // Tailwind classes for inputs. A red border is added when the field has an error.
+// Phones: 16px text (text-base), because iPhone Safari zooms the whole page in
+// when you tap an input with smaller text, and at least 40px tall (min-h-10)
+// for easy tapping. From 640px up (sm:) the text is the more compact 14px.
 function inputClasses(error) {
   const base =
-    "block w-full rounded-lg border bg-white px-3 py-2 text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2";
+    "block min-h-10 w-full rounded-lg border bg-white px-3 py-2 text-base text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 sm:text-sm";
   return error
     ? `${base} border-red-400 focus:ring-red-200`
     : `${base} border-slate-300 focus:border-teal-500 focus:ring-teal-100`;

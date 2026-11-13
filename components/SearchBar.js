@@ -13,7 +13,8 @@ export default function SearchBar({ searchText, onSearchChange }) {
         value={searchText}
         onChange={(event) => onSearchChange(event.target.value)}
         placeholder="Search by patient name or phone"
-        className="block w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 placeholder:text-slate-400 focus:border-teal-500 focus:ring-2 focus:ring-teal-100 focus:outline-none"
+        // text-base on phones stops iPhone Safari zooming in when the box is tapped
+        className="block min-h-10 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-base text-slate-900 sm:text-sm placeholder:text-slate-400 focus:border-teal-500 focus:ring-2 focus:ring-teal-100 focus:outline-none"
       />
     </div>
   );
