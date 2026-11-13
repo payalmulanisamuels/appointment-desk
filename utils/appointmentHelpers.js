@@ -53,6 +53,26 @@ export function formatDisplayTime(timeString) {
   return `${hours12}:${twoDigits(minutes)} ${period}`;
 }
 
+// ----- Status changes -----
+// Which buttons an appointment should show, based on its current status.
+// Forward path: Booked → Confirmed → Completed.
+// Cancel and No-show are possible while the appointment is still open (Booked or Confirmed).
+// Completed, Cancelled and No-show are final, so they get no buttons.
+export function getStatusActions(status) {
+  const cancelAndNoShow = [
+    { label: "Cancel", newStatus: "Cancelled" },
+    { label: "No-show", newStatus: "No-show" },
+  ];
+
+  if (status === "Booked") {
+    return [{ label: "Confirm", newStatus: "Confirmed", isMain: true }, ...cancelAndNoShow];
+  }
+  if (status === "Confirmed") {
+    return [{ label: "Complete", newStatus: "Completed", isMain: true }, ...cancelAndNoShow];
+  }
+  return [];
+}
+
 // ----- Sorting -----
 // Returns a NEW array sorted by date, then time: soonest appointment first.
 // [...appointments] makes a copy first, because .sort() changes the array it is

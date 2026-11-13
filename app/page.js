@@ -47,6 +47,17 @@ export default function HomePage() {
     setAppointments((currentList) => [...currentList, newAppointment]);
   }
 
+  // Called by an AppointmentCard button, e.g. handleStatusChange("abc-123", "Confirmed").
+  // .map() builds a NEW array: the matching appointment is copied with the new status,
+  // every other appointment is kept exactly as it was.
+  function handleStatusChange(appointmentId, newStatus) {
+    setAppointments((currentList) =>
+      currentList.map((appointment) =>
+        appointment.id === appointmentId ? { ...appointment, status: newStatus } : appointment
+      )
+    );
+  }
+
   return (
     <div className="min-h-screen">
       <DashboardHeader />
@@ -64,7 +75,11 @@ export default function HomePage() {
             onAddAppointment={handleAddAppointment}
           />
 
-          <AppointmentList appointments={visibleAppointments} isLoaded={isLoaded} />
+          <AppointmentList
+            appointments={visibleAppointments}
+            isLoaded={isLoaded}
+            onStatusChange={handleStatusChange}
+          />
         </div>
       </main>
     </div>

@@ -3,7 +3,7 @@ import AppointmentCard, { ROW_COLUMNS } from "@/components/AppointmentCard";
 // The "Appointments" panel: a heading, the column header row (tablet/desktop only)
 // and one AppointmentCard per appointment.
 // It receives appointments that are ALREADY sorted (page.js does the sorting).
-export default function AppointmentList({ appointments, isLoaded }) {
+export default function AppointmentList({ appointments, isLoaded, onStatusChange }) {
   return (
     <section className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
       <div className="border-b border-slate-200 px-4 py-3">
@@ -35,12 +35,17 @@ export default function AppointmentList({ appointments, isLoaded }) {
             <span>Time</span>
             <span>Source</span>
             <span>Status</span>
+            <span>Actions</span>
           </div>
 
           {/* key: a unique id per item, so React can track each row when the list changes */}
           <ul className="divide-y divide-slate-100">
             {appointments.map((appointment) => (
-              <AppointmentCard key={appointment.id} appointment={appointment} />
+              <AppointmentCard
+                key={appointment.id}
+                appointment={appointment}
+                onStatusChange={onStatusChange}
+              />
             ))}
           </ul>
         </>
