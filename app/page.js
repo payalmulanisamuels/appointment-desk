@@ -6,9 +6,11 @@ import AppointmentForm from "@/components/AppointmentForm";
 import AppointmentList from "@/components/AppointmentList";
 import FilterTabs from "@/components/FilterTabs";
 import SearchBar from "@/components/SearchBar";
+import SummaryCards from "@/components/SummaryCards";
 import { loadAppointments, saveAppointments } from "@/utils/storage";
 import {
   filterAppointments,
+  getSummaryCounts,
   getTodayDateString,
   sortAppointments,
 } from "@/utils/appointmentHelpers";
@@ -56,6 +58,11 @@ export default function HomePage() {
     filterAppointments(appointments, activeFilter, searchText, today)
   );
 
+  // Today's numbers for the summary cards, also worked out fresh on every render,
+  // so they change the moment an appointment is added or a status changes.
+  // (null until loaded: the cards show "–" instead of a misleading 0.)
+  const summaryCounts = isLoaded ? getSummaryCounts(appointments, today) : null;
+
   // Called by AppointmentForm when a valid appointment is submitted.
   function handleAddAppointment(newAppointment) {
     setAppointments((currentList) => [...currentList, newAppointment]);
@@ -77,8 +84,8 @@ export default function HomePage() {
       <DashboardHeader />
 
       <main className="mx-auto max-w-7xl space-y-6 px-4 py-6 sm:px-6 lg:px-8">
-        {/* Row 1: summary cards (feature 7) */}
-        <PlaceholderBox title="Summary cards" note="Feature 7: today's counts" />
+        {/* Row 1: today's summary numbers */}
+        <SummaryCards counts={summaryCounts} />
 
         {/* Row 2: form on the left, list on the right from 1280px up.
             Below 1280px they stack, so the list gets the full width for its columns. */}
@@ -101,15 +108,5 @@ export default function HomePage() {
         </div>
       </main>
     </div>
-  );
-}
-
-// Temporary helper. It is deleted once all boxes are replaced by real components.
-function PlaceholderBox({ title, note }) {
-  return (
-    <section className="rounded-xl border-2 border-dashed border-slate-300 bg-white p-6">
-      <h2 className="font-semibold text-slate-700">{title}</h2>
-      <p className="mt-1 text-sm text-slate-500">{note}</p>
-    </section>
   );
 }

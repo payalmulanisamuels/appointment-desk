@@ -100,6 +100,23 @@ export function filterAppointments(appointments, activeFilter, searchText, today
   );
 }
 
+// ----- Summary counts -----
+// Counts for the summary cards. ALL numbers are for TODAY's appointments only,
+// so "Booked 3" means "3 of today's appointments are still Booked".
+export function getSummaryCounts(appointments, today) {
+  const todays = appointments.filter((appointment) => appointment.date === today);
+  const countStatus = (status) =>
+    todays.filter((appointment) => appointment.status === status).length;
+
+  return {
+    total: todays.length,
+    booked: countStatus("Booked"),
+    confirmed: countStatus("Confirmed"),
+    completed: countStatus("Completed"),
+    cancelledOrNoShow: countStatus("Cancelled") + countStatus("No-show"),
+  };
+}
+
 // ----- Sorting -----
 // Returns a NEW array sorted by date, then time: soonest appointment first.
 // [...appointments] makes a copy first, because .sort() changes the array it is
