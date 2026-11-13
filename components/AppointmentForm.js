@@ -20,7 +20,11 @@ const EMPTY_FORM = {
 // The "New appointment" form.
 // It only keeps TEMPORARY data (what is being typed). When the form is valid it
 // hands the finished appointment to its parent by calling onAddAppointment().
-export default function AppointmentForm({ onAddAppointment }) {
+// Props from page.js:
+// - appointments: the current list (needed for the double-booking check)
+// - today: today's date "YYYY-MM-DD" (only known once we are in the browser)
+// - onAddAppointment: function to call with the new appointment
+export default function AppointmentForm({ appointments, today, onAddAppointment }) {
   const [formData, setFormData] = useState(EMPTY_FORM);
   const [errors, setErrors] = useState({});
   const [successMessage, setSuccessMessage] = useState("");
@@ -30,14 +34,20 @@ export default function AppointmentForm({ onAddAppointment }) {
   function handleChange(event) {
     const { name, value } = event.target;
     setFormData({ ...formData, [name]: value });
-    setErrors({ ...errors, [name]: "" }); // hide this field's error while editing
+    // Hide this field's error while editing. Changing the date also hides the time
+    // error, because "slot already booked" may no longer be true for the new date.
+    if (name === "date") {
+      setErrors({ ...errors, date: "", time: "" });
+    } else {
+      setErrors({ ...errors, [name]: "" });
+    }
     setSuccessMessage("");
   }
 
   function handleSubmit(event) {
     event.preventDefault(); // stop the browser from reloading the page
 
-    const newErrors = validateAppointment(formData);
+    const newErrors = validateAppointment(formData, appointments);
     if (Object.keys(newErrors).length > 0) {
       setErrors(newErrors); // show messages under the wrong fields, add nothing
       return;
@@ -120,6 +130,7 @@ export default function AppointmentForm({ onAddAppointment }) {
               id="date"
               name="date"
               type="date"
+              min={today} // greys out past days in the date picker (validation is the real rule)
               value={formData.date}
               onChange={handleChange}
               className={inputClasses(errors.date)}

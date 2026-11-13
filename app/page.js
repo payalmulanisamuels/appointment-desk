@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import DashboardHeader from "@/components/DashboardHeader";
 import AppointmentForm from "@/components/AppointmentForm";
 import { loadAppointments, saveAppointments } from "@/utils/storage";
+import { getTodayDateString } from "@/utils/appointmentHelpers";
 
 // The home page ("/") and THE BRAIN of the app:
 // it owns the appointments array and every function that changes it.
@@ -32,6 +33,10 @@ export default function HomePage() {
     }
   }, [appointments, isLoaded]);
 
+  // Today's date, calculated only in the browser (after loading). On the server it
+  // stays undefined, so the server HTML and the first browser HTML always match.
+  const today = isLoaded ? getTodayDateString() : undefined;
+
   // Called by AppointmentForm when a valid appointment is submitted.
   function handleAddAppointment(newAppointment) {
     setAppointments((currentList) => [...currentList, newAppointment]);
@@ -47,7 +52,11 @@ export default function HomePage() {
 
         {/* Row 2: form on the left, list on the right (stacked on smaller screens) */}
         <div className="grid items-start gap-6 lg:grid-cols-[360px_1fr]">
-          <AppointmentForm onAddAppointment={handleAddAppointment} />
+          <AppointmentForm
+            appointments={appointments}
+            today={today}
+            onAddAppointment={handleAddAppointment}
+          />
 
           <PlaceholderBox
             title="Appointments"
