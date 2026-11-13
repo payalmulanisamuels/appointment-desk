@@ -3,8 +3,9 @@
 import { useEffect, useState } from "react";
 import DashboardHeader from "@/components/DashboardHeader";
 import AppointmentForm from "@/components/AppointmentForm";
+import AppointmentList from "@/components/AppointmentList";
 import { loadAppointments, saveAppointments } from "@/utils/storage";
-import { getTodayDateString } from "@/utils/appointmentHelpers";
+import { getTodayDateString, sortAppointments } from "@/utils/appointmentHelpers";
 
 // The home page ("/") and THE BRAIN of the app:
 // it owns the appointments array and every function that changes it.
@@ -37,6 +38,10 @@ export default function HomePage() {
   // stays undefined, so the server HTML and the first browser HTML always match.
   const today = isLoaded ? getTodayDateString() : undefined;
 
+  // The list to SHOW, worked out fresh on every render. It is never stored
+  // separately, so it can never get out of date with the real appointments.
+  const visibleAppointments = sortAppointments(appointments);
+
   // Called by AppointmentForm when a valid appointment is submitted.
   function handleAddAppointment(newAppointment) {
     setAppointments((currentList) => [...currentList, newAppointment]);
@@ -50,22 +55,16 @@ export default function HomePage() {
         {/* Row 1: summary cards (feature 7) */}
         <PlaceholderBox title="Summary cards" note="Feature 7: today's counts" />
 
-        {/* Row 2: form on the left, list on the right (stacked on smaller screens) */}
-        <div className="grid items-start gap-6 lg:grid-cols-[360px_1fr]">
+        {/* Row 2: form on the left, list on the right from 1280px up.
+            Below 1280px they stack, so the list gets the full width for its columns. */}
+        <div className="grid items-start gap-6 xl:grid-cols-[360px_1fr]">
           <AppointmentForm
             appointments={appointments}
             today={today}
             onAddAppointment={handleAddAppointment}
           />
 
-          <PlaceholderBox
-            title="Appointments"
-            note={
-              isLoaded
-                ? `${appointments.length} appointment(s) saved. The list arrives in feature 4.`
-                : "Loading appointments…"
-            }
-          />
+          <AppointmentList appointments={visibleAppointments} isLoaded={isLoaded} />
         </div>
       </main>
     </div>

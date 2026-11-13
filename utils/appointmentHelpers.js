@@ -53,6 +53,19 @@ export function formatDisplayTime(timeString) {
   return `${hours12}:${twoDigits(minutes)} ${period}`;
 }
 
+// ----- Sorting -----
+// Returns a NEW array sorted by date, then time: soonest appointment first.
+// [...appointments] makes a copy first, because .sort() changes the array it is
+// called on, and React state must never be changed directly.
+export function sortAppointments(appointments) {
+  return [...appointments].sort((a, b) => {
+    if (a.date !== b.date) {
+      return a.date.localeCompare(b.date); // different days: earlier day first
+    }
+    return a.time.localeCompare(b.time); // same day: earlier time first
+  });
+}
+
 // ----- Double-booking check -----
 // Returns the appointment already booked at this date + time, or undefined if the slot is free.
 // A Cancelled appointment does NOT block the slot (the patient is not coming).

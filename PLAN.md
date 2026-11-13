@@ -151,8 +151,8 @@ The box is compact (no large blank area).
 
 ## Responsive design approach
 
-- **≥1024px (desktop, optimised for 1440):** max-width ~1280px centred container. Header → 5 summary cards in one row → two columns: form on the left (~360px) | tabs + search + list on the right.
-- **768–1023px (tablet):** summary cards in 3 + 2 rows, form stacked above the list, list still as table-like rows.
+- **≥1280px (desktop, optimised for 1440):** max-width ~1280px centred container. Header → 5 summary cards in one row → two columns: form on the left (~360px) | tabs + search + list on the right.
+- **768–1279px (tablets, small laptops):** form stacked above the list, so the list gets the full width and still shows table-like rows. *(Changed in feature 4: at 1024px, with the form beside it, the list column would only be ~580px wide, too narrow for 6–7 columns.)*
 - **<768px / 375px (mobile):** single column, summary cards 2 per row, filter tabs **wrap** onto extra lines (no sideways scroll), each appointment becomes a stacked card with labels, full-width form inputs and buttons (min 40px tall).
 - `AppointmentCard` uses CSS Grid: a 7-column row on desktop and stacked on mobile. One component, no duplicated markup. The column header row in `AppointmentList` is hidden on mobile.
 - Status badge colours: Booked blue · Confirmed indigo · Completed green · Cancelled grey · No-show amber/red.
