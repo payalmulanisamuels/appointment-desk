@@ -1,9 +1,42 @@
-import DashboardHeader from "@/components/DashboardHeader";
+"use client"; // this page uses state, effects and localStorage, so it must run in the browser
 
-// The home page ("/") of the app.
-// Feature 1 builds only the LAYOUT: the dashed boxes show where each
-// feature will go. Each later feature replaces one box with a real component.
+import { useEffect, useState } from "react";
+import DashboardHeader from "@/components/DashboardHeader";
+import AppointmentForm from "@/components/AppointmentForm";
+import { loadAppointments, saveAppointments } from "@/utils/storage";
+
+// The home page ("/") and THE BRAIN of the app:
+// it owns the appointments array and every function that changes it.
 export default function HomePage() {
+  // The single source of truth: every appointment lives in this array.
+  const [appointments, setAppointments] = useState([]);
+
+  // false until we have read localStorage (which only exists in the browser).
+  const [isLoaded, setIsLoaded] = useState(false);
+
+  // 1) LOAD once, after the page first appears in the browser.
+  //    localStorage does not exist on the server, so this cannot happen during the
+  //    first render; an effect is the place for it. React's lint rule warns about
+  //    setState inside effects in general, so we switch it off for this one line.
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- one-time load from localStorage
+    setAppointments(loadAppointments());
+    setIsLoaded(true);
+  }, []);
+
+  // 2) SAVE every time the appointments array changes.
+  //    The isLoaded check stops the empty starting [] from overwriting saved data.
+  useEffect(() => {
+    if (isLoaded) {
+      saveAppointments(appointments);
+    }
+  }, [appointments, isLoaded]);
+
+  // Called by AppointmentForm when a valid appointment is submitted.
+  function handleAddAppointment(newAppointment) {
+    setAppointments((currentList) => [...currentList, newAppointment]);
+  }
+
   return (
     <div className="min-h-screen">
       <DashboardHeader />
@@ -13,14 +46,16 @@ export default function HomePage() {
         <PlaceholderBox title="Summary cards" note="Feature 7: today's counts" />
 
         {/* Row 2: form on the left, list on the right (stacked on smaller screens) */}
-        <div className="grid gap-6 lg:grid-cols-[360px_1fr]">
-          <PlaceholderBox
-            title="New appointment form"
-            note="Features 2 & 3: add + validation"
-          />
+        <div className="grid items-start gap-6 lg:grid-cols-[360px_1fr]">
+          <AppointmentForm onAddAppointment={handleAddAppointment} />
+
           <PlaceholderBox
             title="Appointments"
-            note="Features 4–6 & 8: list, status, filters, search, empty states"
+            note={
+              isLoaded
+                ? `${appointments.length} appointment(s) saved. The list arrives in feature 4.`
+                : "Loading appointments…"
+            }
           />
         </div>
       </main>
@@ -28,7 +63,7 @@ export default function HomePage() {
   );
 }
 
-// Temporary helper used only in feature 1. It is deleted once all boxes are replaced.
+// Temporary helper. It is deleted once all boxes are replaced by real components.
 function PlaceholderBox({ title, note }) {
   return (
     <section className="rounded-xl border-2 border-dashed border-slate-300 bg-white p-6">
